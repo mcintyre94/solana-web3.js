@@ -1,0 +1,36 @@
+[View code on GitHub](https://github.com/solana-labs/solana-web3.js/blob/master/packages/rpc-transport/src/index.ts)
+
+The code above is a TypeScript module that exports an interface and a function from another module called `json-rpc-transport`. The purpose of this code is to provide a way to communicate with a JSON-RPC server using TypeScript. 
+
+The `IJsonRpcTransport` interface defines a method called `send` that takes two generic parameters: `TParams` and `TResponse`. The `send` method is used to send a JSON-RPC request to the server and returns a Promise that resolves to the server's response. The `method` parameter is a string that represents the name of the JSON-RPC method to call, and the `params` parameter is an object that contains the parameters to pass to the method.
+
+The `createJsonRpcTransport` function is exported from the `json-rpc-transport` module and is used to create an instance of the `IJsonRpcTransport` interface. This function takes no parameters and returns an object that implements the `IJsonRpcTransport` interface. 
+
+Here is an example of how this code can be used:
+
+```typescript
+import { createJsonRpcTransport, IJsonRpcTransport } from 'solana-web3';
+
+const transport: IJsonRpcTransport = createJsonRpcTransport('http://localhost:8899');
+
+transport.send<string, number>('getBalance', 'someAddress')
+  .then((balance: number) => {
+    console.log(`Balance: ${balance}`);
+  })
+  .catch((error: Error) => {
+    console.error(`Error: ${error.message}`);
+  });
+```
+
+In this example, we import the `createJsonRpcTransport` function and the `IJsonRpcTransport` interface from the `solana-web3` module. We then create an instance of the `IJsonRpcTransport` interface by calling the `createJsonRpcTransport` function with the URL of the JSON-RPC server. Finally, we use the `send` method to call the `getBalance` method on the server with the `someAddress` parameter. The `send` method returns a Promise that resolves to the balance of the address, which we log to the console. If there is an error, we log the error message to the console. 
+
+Overall, this code provides a simple and type-safe way to communicate with a JSON-RPC server in TypeScript. It can be used in the larger project to interact with the Solana blockchain network.
+## Questions: 
+ 1. What is the purpose of the `createJsonRpcTransport` function imported from `json-rpc-transport`?
+- The `createJsonRpcTransport` function is likely used to create a JSON-RPC transport object for communicating with a remote server.
+
+2. What is the `IJsonRpcTransport` interface and what does it define?
+- The `IJsonRpcTransport` interface defines a `send` method that takes in a method string and parameters of type `TParams`, and returns a promise that resolves to a response of type `TResponse`. This interface is likely used to ensure consistency in the structure of JSON-RPC requests and responses.
+
+3. Why is `createJsonRpcTransport` being exported again at the end of the file?
+- `createJsonRpcTransport` is being re-exported at the end of the file to make it available for import from this file, rather than having to import it from `json-rpc-transport` directly. This can make the code more modular and easier to use.

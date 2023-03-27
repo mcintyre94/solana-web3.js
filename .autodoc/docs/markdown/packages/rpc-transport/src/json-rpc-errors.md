@@ -1,0 +1,32 @@
+[View code on GitHub](https://github.com/solana-labs/solana-web3.js/blob/master/packages/rpc-transport/src/json-rpc-errors.ts)
+
+The code defines a custom error class called `SolanaJsonRpcError` that extends the built-in `Error` class. This error class is used to handle errors that occur during JSON-RPC 2.0 requests in the Solana blockchain ecosystem. 
+
+The `SolanaJsonRpcError` class takes in an object called `details` that contains three properties: `code`, `data`, and `message`. The `code` property is a number that represents the error code, the `data` property is an optional unknown type that contains additional error data, and the `message` property is a string that describes the error. 
+
+When an instance of `SolanaJsonRpcError` is created, it calls the `Error` constructor with a formatted error message that includes the `code` and `message` properties from the `details` object. It also captures the stack trace of the error using the `Error.captureStackTrace` method. Finally, it sets the `code` and `data` properties of the instance to the corresponding properties from the `details` object.
+
+This error class can be used in the larger Solana project to handle errors that occur during JSON-RPC 2.0 requests. For example, if a request to the Solana blockchain fails due to an invalid parameter, the SolanaJsonRpcError class can be used to create an error object with the appropriate error code and message. This error object can then be thrown and caught by the calling code to handle the error appropriately. 
+
+Example usage:
+
+```
+try {
+  // make a JSON-RPC 2.0 request to the Solana blockchain
+} catch (error) {
+  if (error instanceof SolanaJsonRpcError) {
+    // handle the error appropriately based on the error code and message
+  } else {
+    // handle other types of errors
+  }
+}
+```
+## Questions: 
+ 1. What is the purpose of the `SolanaJsonRpcError` class?
+- The `SolanaJsonRpcError` class is used to represent errors that occur during JSON-RPC 2.0 requests in the Solana Web3.js library.
+
+2. What information is stored in the `details` parameter of the `SolanaJsonRpcError` constructor?
+- The `details` parameter is an object that contains information about the JSON-RPC error, including the error code, optional data, and error message.
+
+3. What is the `name` getter used for in the `SolanaJsonRpcError` class?
+- The `name` getter is used to retrieve the name of the error class, which is always set to `'SolanaJsonRpcError'`.

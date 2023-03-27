@@ -1,0 +1,28 @@
+[View code on GitHub](https://github.com/solana-labs/solana-web3.js/blob/master/packages/library-legacy/src/utils/shortvec-encoding.ts)
+
+The code above contains two functions, `decodeLength` and `encodeLength`, that are used to encode and decode the length of a byte array. The purpose of these functions is to provide a way to efficiently encode and decode the length of a byte array in a compact format.
+
+The `decodeLength` function takes an array of bytes as input and returns the length of the byte array. It does this by iterating over the bytes in the array and decoding the length using a variable-length encoding scheme. The function reads the bytes one by one, and for each byte, it extracts the least significant 7 bits and shifts them to the left by a multiple of 7 bits. It then adds the result to a running total, which is the decoded length of the byte array. If the most significant bit of the byte is 0, the function stops iterating and returns the decoded length.
+
+The `encodeLength` function takes an array of bytes and a length as input and encodes the length of the byte array using the same variable-length encoding scheme as `decodeLength`. The function iteratively extracts the least significant 7 bits of the length and appends them to the byte array. If the remaining length is 0, the function stops iterating and returns the encoded byte array.
+
+These functions are useful in the context of the larger project because they provide a way to efficiently encode and decode the length of byte arrays, which is a common operation in many blockchain-related applications. For example, in the Solana blockchain, transactions are represented as byte arrays, and the length of the transaction is encoded using a variable-length encoding scheme similar to the one used in these functions. Therefore, these functions can be used to encode and decode the length of transactions in a compact format, which can save space and improve performance. 
+
+Example usage:
+
+```
+const bytes = [0x81, 0x80, 0x01]; // represents a byte array of length 128*128 + 1 = 16385
+const decodedLength = decodeLength(bytes); // returns 16385
+const encodedBytes = [];
+encodeLength(encodedBytes, decodedLength); // encodes the length of the byte array
+console.log(encodedBytes); // prints [0x81, 0x80, 0x01]
+```
+## Questions: 
+ 1. What is the purpose of the `decodeLength` function?
+- The `decodeLength` function takes an array of bytes and decodes it into a number by reading the bytes in groups of 7 bits and combining them into a single number.
+
+2. What is the purpose of the `encodeLength` function?
+- The `encodeLength` function takes a number and encodes it into an array of bytes by breaking it down into groups of 7 bits and storing each group in a separate byte.
+
+3. What is the expected input and output format for these functions?
+- Both functions take an array of bytes and a number as input, and return a number or modify the input array. It is not specified what the input bytes represent or what the output number represents, so this information would need to be provided elsewhere in the code or documentation.
