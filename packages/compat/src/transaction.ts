@@ -1,4 +1,4 @@
-import { Base58EncodedAddress } from '@solana/addresses';
+import { assertIsBase58EncodedAddress, Base58EncodedAddress } from '@solana/addresses';
 import { pipe } from '@solana/functional';
 import { AccountRole, IAccountMeta, IInstruction } from '@solana/instructions';
 import { Ed25519Signature } from '@solana/keys';
@@ -6,11 +6,15 @@ import {
     appendTransactionInstruction,
     Blockhash,
     createTransaction,
+    IDurableNonceTransaction,
+    isAdvanceNonceAccountInstruction,
     ITransactionWithBlockhashLifetime,
     ITransactionWithFeePayer,
     ITransactionWithSignatures,
+    Nonce,
     setTransactionFeePayer,
     setTransactionLifetimeUsingBlockhash,
+    setTransactionLifetimeUsingDurableNonce,
     Transaction,
 } from '@solana/transactions';
 import {
@@ -120,6 +124,66 @@ export function fromVersionedTransactionWithBlockhash(
         createTransaction({ version: transaction.version }),
         tx => setTransactionFeePayer(feePayer.toBase58() as Base58EncodedAddress, tx),
         tx => setTransactionLifetimeUsingBlockhash(blockhashLifetime, tx),
+        tx =>
+            instructions.reduce((acc, instruction) => {
+                return appendTransactionInstruction(instruction, acc);
+            }, tx),
+        tx => (transaction.signatures.length ? { ...tx, signatures } : tx)
+    );
+}
+
+export function fromVersionedTransactionWithDurableNonce(
+    transaction: VersionedTransaction
+): Transaction & ITransactionWithFeePayer & IDurableNonceTransaction {
+    // TODO: add support for address table lookups
+    // - will need to take `AddressLookupTableAccounts[]` as input
+    // - will need to convert account instructions to `IAccountLookupMeta` when appropriate
+    if (transaction.message.addressTableLookups.length > 0) {
+        // TODO coded error
+        throw new Error('Cannot convert transaction with addressTableLookups');
+    }
+
+    const accountKeys = transaction.message.getAccountKeys();
+
+    // Fee payer is first account
+    const feePayer = accountKeys.staticAccountKeys[0];
+    // TODO: coded error
+    if (!feePayer) throw new Error('No fee payer set in VersionedTransaction');
+
+    const instructions = transaction.message.compiledInstructions.map(instruction =>
+        convertInstruction(transaction.message, accountKeys, instruction)
+    );
+
+    // Check first instruction is durable nonce + extract params
+    if (instructions.length === 0) {
+        // TODO: coded error
+        throw new Error('transaction with no instructions cannot be durable nonce transaction');
+    }
+
+    if (!isAdvanceNonceAccountInstruction(instructions[0])) {
+        // TODO: coded error
+        throw new Error('transaction first instruction is not advance nonce account instruction');
+    }
+
+    // We know these accounts are defined because we checked `isAdvanceNonceAccountInstruction`
+    const nonceAccountAddress = instructions[0].accounts![0].address;
+    assertIsBase58EncodedAddress(nonceAccountAddress);
+
+    const nonceAuthorityAddress = instructions[0].accounts![2].address;
+    assertIsBase58EncodedAddress(nonceAuthorityAddress);
+
+    const durableNonceLifetime = {
+        nonce: transaction.message.recentBlockhash as Nonce,
+        nonceAccountAddress,
+        nonceAuthorityAddress,
+    };
+
+    const signatures = convertSignatures(transaction, accountKeys.staticAccountKeys);
+
+    return pipe(
+        createTransaction({ version: transaction.version }),
+        tx => setTransactionFeePayer(feePayer.toBase58() as Base58EncodedAddress, tx),
+        tx => setTransactionLifetimeUsingDurableNonce(durableNonceLifetime, tx),
         tx =>
             instructions.reduce((acc, instruction) => {
                 return appendTransactionInstruction(instruction, acc);
