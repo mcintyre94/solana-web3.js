@@ -101,7 +101,7 @@ function generateConfig(configType, format) {
       '@noble/hashes/sha3',
       '@noble/secp256k1',
       '@solana/buffer-layout',
-      'bigint-buffer',
+      '@solana/codecs-numbers',
       'bn.js',
       'borsh',
       'bs58',
